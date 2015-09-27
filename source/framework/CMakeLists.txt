@@ -1,7 +1,7 @@
 project(framework)
 
 set(USE_QT TRUE)
-set(DEPENDS_QT Widgets)
+set(DEPENDS_QT Widgets Network)
 
 # External dependencies
 #set(DEPENDS)
