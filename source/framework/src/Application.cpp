@@ -24,7 +24,7 @@ namespace sb {
 
 Application* Application::s_pInstance = nullptr;
 
-Application::Application(int argc, char *argv[])
+Application::Application(int &argc, char **argv)
     : QApplication(argc, argv)
 {
     Q_ASSERT(s_pInstance == nullptr);

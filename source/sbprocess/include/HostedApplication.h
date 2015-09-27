@@ -15,11 +15,34 @@
     Lesser General Public License for more details.
 */
 
-#include "../include/HostedApplication.h"
+#ifndef HOSTEDAPPLICATION_H
+#define HOSTEDAPPLICATION_H
 
-int main(int argc, char *argv[])
+#include <QApplication>
+#include "PluginsManager.h"
+
+class HostedApplication : public QApplication
 {
-    HostedApplication app(argc, argv);
-    
-    return app.launch();
-}
+    Q_OBJECT
+public:
+
+    HostedApplication(int &argc, char **argv);
+    ~HostedApplication();
+
+    int launch();
+
+private slots:
+
+    void loadPlugin();
+
+private:
+
+    bool parseArguments();
+
+    sb::PluginsManager *m_pPluginsManager;
+    QString m_pipeName;
+    QString m_pluginName;
+};
+
+#endif // HOSTEDAPPLICATION_H
+

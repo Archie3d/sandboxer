@@ -54,8 +54,8 @@ void HostPluginInstance::start()
     Q_ASSERT(m_pProcess->state() == QProcess::NotRunning);
 
     QStringList args;
-    args << "-xpipe" << "bridge_pipe_name";
-    args << "-plugin" << m_pluginFile;
+    args << "-x" << "bridge_pipe_name";
+    args << "-p" << m_pluginFile;
 
     m_pProcess->setWorkingDirectory(Application::instance()->applicationDirPath());
     m_pProcess->start("sbprocess.exe", args);
@@ -82,8 +82,16 @@ void HostPluginInstance::onProcessFinished(int code, QProcess::ExitStatus exitSt
 
 void HostPluginInstance::onProcessStdOutput()
 {
+    QString str = m_pProcess->readAllStandardOutput();
+    if (!str.isEmpty()) {
+        qDebug() << "[SANDBOX]" << str;
+    }
 }
 
 void HostPluginInstance::onProcessStdError()
 {
+    QString str = m_pProcess->readAllStandardError();
+    if (!str.isEmpty()) {
+        qWarning() << "[SANDBOX]" << str;
+    }
 }

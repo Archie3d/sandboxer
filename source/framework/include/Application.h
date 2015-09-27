@@ -32,7 +32,7 @@ public:
 
     static Application* instance();
 
-    Application(int argc, char *argv[]);
+    Application(int &argc, char **argv);
     ~Application();
 
     void registerPlugin(const QString &fileName);
