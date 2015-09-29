@@ -16,6 +16,7 @@
 */
 
 #include <QLocalSocket>
+#include <QDataStream>
 #include "BridgeCommunicator.h"
 
 namespace sb {
