@@ -84,9 +84,9 @@ void HostPluginInstance::onProcessError(QProcess::ProcessError err)
 
 void HostPluginInstance::onProcessFinished(int code, QProcess::ExitStatus exitStatus)
 {
-    if (exitStatus == QProcess::Crashed) {
+    if (exitStatus == QProcess::Crashed || code != 0) {
         int ret = QMessageBox::question(this, tr("Crash"),
-                                        tr("The plugin %1 has crashed. Restart?").arg(m_pluginFile),
+                                        tr("The plugin %1 has terminated prematurely. Restart?").arg(m_pluginFile),
                                         QMessageBox::Yes | QMessageBox::No,
                                         QMessageBox::No);
         if (ret == QMessageBox::Yes) {
@@ -94,7 +94,7 @@ void HostPluginInstance::onProcessFinished(int code, QProcess::ExitStatus exitSt
             start();
         }
     } else {
-        qDebug() << "Sandbox process finished" << code;
+        qDebug() << "Sandbox process finished normally";
     }
 }
 
