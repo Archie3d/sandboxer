@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QTextEdit>
 #include <QPushButton>
 #include "SimplePluginInstance.h"
 
@@ -28,9 +29,11 @@ SimplePluginInstance::SimplePluginInstance(const QVariantMap &config)
 {
     QVBoxLayout *pLayout = new QVBoxLayout();
     QLabel *pLabel = new QLabel(tr("Simple plugin"));
+    QTextEdit *pEdit = new QTextEdit();
     QPushButton *pButton = new QPushButton(tr("Crash me"));
     connect(pButton, SIGNAL(clicked(bool)), this, SLOT(crash()));
     pLayout->addWidget(pLabel);
+    pLayout->addWidget(pEdit);
     pLayout->addWidget(pButton);
     setLayout(pLayout);
 }

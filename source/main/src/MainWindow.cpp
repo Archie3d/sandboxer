@@ -16,6 +16,7 @@
 */
 
 #include <QHBoxLayout>
+#include <QSplitter>
 #include "Application.h"
 #include "PluginInstance.h"
 #include "PluginsManager.h"
@@ -33,11 +34,15 @@ void MainWindow::initialize()
 {
     QWidget *pWidget = new QWidget();
     QHBoxLayout *pLayout = new QHBoxLayout();
+
     pWidget->setLayout(pLayout);
 
+    QSplitter *pSplitter = new QSplitter(Qt::Horizontal);
+    pLayout->addWidget(pSplitter);
+
     PluginInstance *pNativeInstance = Application::instance()->pluginsManager()->createInstance("Simple");
-    if (pNativeInstance != nullptr) {
-        pLayout->addWidget(pNativeInstance);
+    if (pNativeInstance != nullptr) {        
+        pSplitter->addWidget(pNativeInstance);
     }
 
     QVariantMap cfg = {
@@ -45,8 +50,11 @@ void MainWindow::initialize()
     };
     PluginInstance *pSbInstance = Application::instance()->pluginsManager()->createInstance("Host", cfg);
     if (pSbInstance != nullptr) {
-        pLayout->addWidget(pSbInstance);
+        pSplitter->addWidget(pSbInstance);
     }
+
+    int s = width() / 2;
+    pSplitter->setSizes(QList<int>() << s << s);
 
     setCentralWidget(pWidget);
 }
