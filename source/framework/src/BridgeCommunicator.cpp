@@ -74,24 +74,21 @@ void BridgeCommunicator::sendPacket(PacketType type, const QVariant &data)
 
 void BridgeCommunicator::onConnected()
 {
-    qDebug() << "Connected";
     setState(State_Idle);
 }
 
 void BridgeCommunicator::onDisconnected()
 {
-    qDebug() << "Disconnected";
     setState(State_NotConnected);
 }
 
 void BridgeCommunicator::onSocketError()
 {
-    qDebug() << "Socket error";
+    qWarning() << "Socket error";
 }
 
 void BridgeCommunicator::onDataAvailable()
 {
-    qDebug() << "Available" << m_pSocket->bytesAvailable() << "bytes to read, state=" << m_state;
     if (m_state == State_Idle) {
         setState(State_ReceiveHeader);
     } else {
