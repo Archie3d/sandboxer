@@ -47,4 +47,9 @@ void BridgeClient::sendRequest(const QVariant &data)
     m_pBridgeCommunicator->sendPacket(BridgeCommunicator::PacketType_Request, data);
 }
 
+void BridgeClient::sendResponse(const QVariant &data)
+{
+    m_pBridgeCommunicator->sendPacket(BridgeCommunicator::PacketType_Response, data);
+}
+
 } // namespace sb

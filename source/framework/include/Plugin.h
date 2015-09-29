@@ -23,6 +23,11 @@ namespace sb {
 
 class PluginInstance;
 
+/**
+ * @brief Plugin abstract object.
+ * A plugin can generate as many instanced as requested.
+ * Each instance can be configured differently upon creation.
+ */
 class SB_FRAMEWORK_API Plugin : public QObject
 {
     Q_OBJECT
@@ -35,12 +40,33 @@ public:
 
     QString name() const { return m_name; }
 
+    /**
+     * @brief Initialize the plugin.
+     * Called by @ref PluginsManager just after the plugin has been loaded.
+     */
     virtual void initialize();
+
+    /**
+     * @brief Cleanup the plugin.
+     * Called by @ref PluginsManager before unloading the plugin.
+     */
     virtual void cleanup();
+
+    /**
+     * Create plugin's instance.
+     * @param config Instance configuration data.
+     * @return Create plugin or null if error.
+     */
     virtual PluginInstance* createInstance(const QVariantMap &config) = 0;
 
 protected:
 
+    /**
+     * @brief Assign plugin name.
+     * Name is assigned by @ref PluginsManager that fetches it in its turn
+     * from plugin's metadata (json object).
+     * @param n
+     */
     void setName(const QString &n) { m_name = n; }
 
 private:

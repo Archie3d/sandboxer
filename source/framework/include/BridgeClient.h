@@ -24,26 +24,59 @@
 
 namespace sb {
 
+/**
+ * @brief IPC client.
+ * Client connects to exiting local server (named pipe).
+ */
 class SB_FRAMEWORK_API BridgeClient : public QObject
 {
     Q_OBJECT
 public:
 
+    /**
+     * Construct the client.
+     * Client object is constructed in disconnected state.
+     * @param pParent
+     */
     BridgeClient(QObject *pParent = nullptr);
 
+    /**
+     * Connect to the local server.
+     * @param serverName Server (pipe) name.
+     */
     void connectToServer(const QString &serverName);
     bool isConnected();
     void close();
 
+    /**
+     * Send request to connected peer.
+     * @param data Request data.
+     */
     void sendRequest(const QVariant &data);
+
+    /**
+     * Send response to connected peer.
+     * @param data Response data.
+     */
+    void sendResponse(const QVariant &data);
 
 signals:
 
+    /**
+     * Incoming request received.
+     * @param data
+     */
     void requestReceived(const QVariant &data);
+
+    /**
+     * Peer response received.
+     * @param data
+     */
     void responseReceived(const QVariant &data);
 
 private:
 
+    /// Communicator object to send/receive messager to/from connected peer.
     BridgeCommunicator *m_pBridgeCommunicator;
 };
 

@@ -27,22 +27,60 @@ namespace sb {
 
 class BridgeCommunicator;
 
+/**
+ * @brief IPC server.
+ * This class creates a socket (pipe) server and listens
+ * for incoming connections. Only single peer connection is handled.
+ * The name of the communication pipe is randomly generated (an MD5 hash)
+ * upon the server start.
+ */
 class SB_FRAMEWORK_API BridgeServer : public QObject
 {
     Q_OBJECT
 public:
 
+    /**
+     * Construct a server.
+     * This will not yet start accepting connection.
+     * @param pParent
+     */
     BridgeServer(QObject *pParent = nullptr);
 
+    /**
+     * Returns IPC pipe name.
+     * @return Pipe name.
+     */
     QString pipeName() const { return m_pipeName; }
 
+    /**
+     * Start listening for incoming connections.
+     */
     void start();
+
+    /**
+     * Send request packet to connected peer.
+     * @param data Request data.
+     */
     void sendRequest(const QVariant &data);
+
+    /**
+     * Send response packet to connected peer.
+     * @param data Response data.
+     */
     void sendResponse(const QVariant &data);
 
 signals:
 
+    /**
+     * Request packet received from connected peer.
+     * @param data
+     */
     void requestReceived(const QVariant &data);
+
+    /**
+     * Response packet received from connected peer.
+     * @param data
+     */
     void responseReceived(const QVariant &data);
 
 private slots:
@@ -51,10 +89,16 @@ private slots:
 
 private:
 
+    /**
+     * Generate random pipe name using MD5 hash.
+     * @return
+     */
     static QString generateRandomPipeName();
 
-    QString m_pipeName;
-    QLocalServer *m_pLocalServer;
+    QString m_pipeName;     ///< IPC pipe name.
+    QLocalServer *m_pLocalServer;   ///< Local server object.
+
+    /// Communication object used to talk to peer.
     BridgeCommunicator *m_pBridgeCommunicator;
 };
 

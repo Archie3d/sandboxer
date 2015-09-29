@@ -29,21 +29,55 @@ namespace sb {
 class Plugin;
 class PluginInstance;
 
+/**
+ * @brief Handle plugins loading and unloading.
+ *
+ * This class handled plugins loading and unloading.
+ * It also acts as facade to particular plugins to create
+ * plugin instances.
+ */
 class SB_FRAMEWORK_API PluginsManager : public QObject
 {
     Q_OBJECT
 public:
 
+    /**
+     * Construct plugins manager but do not load any plugins.
+     * @param pParent
+     */
     PluginsManager(QObject *pParent = nullptr);
+
+    /**
+     * Unload all plugins.
+     * @note There is no guarantee that all the plugins will be unloaded
+     *     after destruction of the manager.
+     */
     ~PluginsManager();
 
+    /**
+     * Load plugin.
+     * @param absolutePath Plugin library absolute path.
+     * @return Pointer to loaded plugin or null if error.
+     */
     Plugin* load(const QString &absolutePath);
+
+    /**
+     * Unload plugin by its name.
+     * @param name Plugin's name.
+     */
     void unload(const QString &name);
 
+    /**
+     * Create plugin's instance.
+     * @param name Plugin name.
+     * @param config Plugin instance configuration data.
+     * @return Pointer to new instance or null if error.
+     */
     PluginInstance* createInstance(const QString &name, const QVariantMap &config = QVariantMap());
 
 private:
-    // Map plugin name to its loader.
+
+    /// Map plugin names to their loaders.
     QMap<QString, QPluginLoader*> m_plugins;
 };
 

@@ -23,12 +23,23 @@
 
 namespace sb {
 
+/**
+ * @brief Plugin instance base class.
+ * Plugin instance is a widget. This class has to be specialized
+ * by each plugin.
+ */
 class SB_FRAMEWORK_API PluginInstance : public QWidget
 {
     Q_OBJECT
 public:
 
     PluginInstance(QWidget *pParent = nullptr);
+
+    // TODO: This class has to define the plugins instance interface
+    // The interface has to be based on request/response mechanism
+    // with variant data passed. This will allow using this interface
+    // via the IPC mechanism as well.
+
 };
 
 } // namespace sb
