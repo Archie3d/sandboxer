@@ -49,9 +49,21 @@ public:
     BridgeCommunicator(QLocalSocket *pSocket, QObject *pParent = nullptr);
     ~BridgeCommunicator();
 
+    void connectToServer(const QString &serverName);
+    void close();
+    bool isConnected();
+
+public slots:
+
+    void sendPacket(PacketType type, const QVariant &data);
+
 signals:
 
     void handleNextState();
+
+    void packetReceived(PacketType type, const QVariant &data);
+    void requestReceived(const QVariant &data);
+    void responseReceived(const QVariant &data);
 
 private slots:
 

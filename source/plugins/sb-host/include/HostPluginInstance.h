@@ -19,7 +19,10 @@
 #define HOSTPLUGININSTANCE_H
 
 #include <QProcess>
+#include "BridgeServer.h"
 #include "PluginInstance.h"
+
+class HostWidget;
 
 class HostPluginInstance : public sb::PluginInstance
 {
@@ -39,11 +42,16 @@ private slots:
     void onProcessStdOutput();
     void onProcessStdError();
 
+    void onRequestReceived(const QVariant &data);
+    void embedWindow(int id);
+    void exitHostedProcess();
+
 private:
 
     // Process running sbprocess
     QProcess *m_pProcess;
-
+    sb::BridgeServer *m_pBridgeServer;
+    HostWidget *m_pHostWidget;
     QString m_pluginFile;
 };
 

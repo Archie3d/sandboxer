@@ -37,25 +37,61 @@ BridgeCommunicator::BridgeCommunicator(QLocalSocket *pSocket, QObject *pParent)
 
 BridgeCommunicator::~BridgeCommunicator()
 {
-    if (m_pSocket) {
-        m_pSocket->close();
-    }
+    close();
+}
+
+void BridgeCommunicator::connectToServer(const QString &serverName)
+{
+    close();
+    m_pSocket->connectToServer(serverName);
+}
+
+void BridgeCommunicator::close()
+{
+    Q_ASSERT(m_pSocket != nullptr);
+    m_pSocket->close();
+}
+
+bool BridgeCommunicator::isConnected()
+{
+    Q_ASSERT(m_pSocket != nullptr);
+    return m_pSocket->isOpen();
+}
+
+void BridgeCommunicator::sendPacket(PacketType type, const QVariant &data)
+{
+    Q_ASSERT(m_pSocket != nullptr);
+
+    QByteArray buffer;
+    QDataStream stream(&buffer, QIODevice::WriteOnly);
+    stream << data;
+
+    QByteArray packet = encodePacketTypeAndLength(type, buffer.length());
+    packet = packet.append(buffer);
+    qint64 s = m_pSocket->write(packet);
+    Q_ASSERT(s == packet.size());
 }
 
 void BridgeCommunicator::onConnected()
 {
+    qDebug() << "Connected";
+    setState(State_Idle);
 }
 
 void BridgeCommunicator::onDisconnected()
 {
+    qDebug() << "Disconnected";
+    setState(State_NotConnected);
 }
 
 void BridgeCommunicator::onSocketError()
 {
+    qDebug() << "Socket error";
 }
 
 void BridgeCommunicator::onDataAvailable()
 {
+    qDebug() << "Available" << m_pSocket->bytesAvailable() << "bytes to read, state=" << m_state;
     if (m_state == State_Idle) {
         setState(State_ReceiveHeader);
     } else {
@@ -102,12 +138,22 @@ void BridgeCommunicator::handleState()
 
         break;
     }
-    case State_Process:
+    case State_Process: {
+        // Decode packet
+        QDataStream stream(&m_receivedPacket, QIODevice::ReadOnly);
+        QVariant data;
+        stream >> data;
 
-        // TODO: decode packet
+        emit packetReceived(m_receivedPacketType, data);
+        if (m_receivedPacketType == PacketType_Request) {
+            emit requestReceived(data);
+        } else {
+            emit responseReceived(data);
+        }
 
         setState(State_Idle);
         break;
+    }
     case State_Error:
         break;
     default:
@@ -120,6 +166,9 @@ void BridgeCommunicator::initialize()
     Q_ASSERT(m_pSocket != nullptr);
 
     m_state = State_NotConnected;
+    if (m_pSocket->isOpen()) {
+        m_state = State_Idle;
+    }
     connect(this, SIGNAL(handleNextState()), this, SLOT(handleState()), Qt::QueuedConnection);
 
     m_pSocket->setParent(this);

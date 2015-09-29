@@ -17,7 +17,10 @@
 
 #include <QDebug>
 #include <QTimer>
+#include <QVBoxLayout>
+#include <QMessageBox>
 #include "Application.h"
+#include "HostWidget.h"
 #include "HostPluginInstance.h"
 
 using namespace sb;
@@ -25,9 +28,18 @@ using namespace sb;
 HostPluginInstance::HostPluginInstance(const QVariantMap &config)
     : PluginInstance()
 {
+    QVBoxLayout *pLayout = new QVBoxLayout();
+    pLayout->setMargin(0);
+    m_pHostWidget = new HostWidget();
+    pLayout->addWidget(m_pHostWidget);
+    setLayout(pLayout);
+
     m_pluginFile = config.value("plugin").toString();
 
-    // TODO: spawn a process sbprocess
+    m_pBridgeServer = new BridgeServer(this);
+    connect(m_pBridgeServer, SIGNAL(requestReceived(QVariant)), this, SLOT(onRequestReceived(QVariant)));
+
+    // Spawn a process sbprocess
     // sbprocess -xpipe <pipename> -plugin <pluginName>
 
     m_pProcess = new QProcess(this);
@@ -42,19 +54,18 @@ HostPluginInstance::HostPluginInstance(const QVariantMap &config)
 
 HostPluginInstance::~HostPluginInstance()
 {
-    m_pProcess->terminate();
-    m_pProcess->waitForFinished(3000);
-    if (m_pProcess->state() != QProcess::NotRunning) {
-        m_pProcess->kill();
-    }
+    exitHostedProcess();
 }
 
 void HostPluginInstance::start()
 {
     Q_ASSERT(m_pProcess->state() == QProcess::NotRunning);
 
+    // Start the bridge server
+    m_pBridgeServer->start();
+
     QStringList args;
-    args << "-x" << "bridge_pipe_name";
+    args << "-x" << m_pBridgeServer->pipeName();
     args << "-p" << m_pluginFile;
 
     m_pProcess->setWorkingDirectory(Application::instance()->applicationDirPath());
@@ -74,7 +85,14 @@ void HostPluginInstance::onProcessError(QProcess::ProcessError err)
 void HostPluginInstance::onProcessFinished(int code, QProcess::ExitStatus exitStatus)
 {
     if (exitStatus == QProcess::Crashed) {
-        qDebug() << "Sandbox process crashed" << code;
+        int ret = QMessageBox::question(this, tr("Crash"),
+                                        tr("The plugin %1 has crashed. Restart?").arg(m_pluginFile),
+                                        QMessageBox::Yes | QMessageBox::No,
+                                        QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            // Restart the process
+            start();
+        }
     } else {
         qDebug() << "Sandbox process finished" << code;
     }
@@ -84,7 +102,7 @@ void HostPluginInstance::onProcessStdOutput()
 {
     QString str = m_pProcess->readAllStandardOutput();
     if (!str.isEmpty()) {
-        qDebug() << "[SANDBOX]" << str;
+        qDebug() << "[SANDBOX]" << str.trimmed();
     }
 }
 
@@ -92,6 +110,39 @@ void HostPluginInstance::onProcessStdError()
 {
     QString str = m_pProcess->readAllStandardError();
     if (!str.isEmpty()) {
-        qWarning() << "[SANDBOX]" << str;
+        qWarning() << "[SANDBOX]" << str.trimmed();
+    }
+}
+
+void HostPluginInstance::onRequestReceived(const QVariant &data)
+{
+    QVariantMap map = data.toMap();
+    if (map["name"] == "setWinId") {
+        embedWindow(map["winid"].toInt());
+    }
+}
+
+void HostPluginInstance::embedWindow(int id)
+{
+    qDebug() << "Embedding window id=" << id;
+    m_pHostWidget->attachChildWindow(id);
+
+    // Trigger show event
+    QVariantMap msg;
+    msg["name"] = "show";
+    m_pBridgeServer->sendRequest(msg);
+}
+
+void HostPluginInstance::exitHostedProcess()
+{
+    QVariantMap msg;
+    msg["name"] = "exit";
+    m_pBridgeServer->sendRequest(msg);
+
+    m_pHostWidget->detachChildWindow();
+    m_pProcess->terminate();
+    m_pProcess->waitForFinished(3000);
+    if (m_pProcess->state() != QProcess::NotRunning) {
+        m_pProcess->kill();
     }
 }

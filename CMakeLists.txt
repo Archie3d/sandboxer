@@ -3,11 +3,15 @@ cmake_minimum_required(VERSION 2.8.10)
 if(${CMAKE_MAJOR_VERSION} GREATER 2)
     cmake_policy(SET CMP0043 OLD)
     cmake_policy(SET CMP0054 OLD)
+    cmake_policy(SET CMP0048 NEW)
+
+    project(sandboxer VERSION 1.0.0)
+else()
+    project(sandboxer)
+    set(PROJECT_VERSION "1.0.0")
 endif()
 cmake_policy(SET CMP0020 OLD)
-cmake_policy(SET CMP0048 NEW)
 
-project(sandboxer VERSION 1.0.0)
 
 add_definitions(-DPROJECT_VERSION="${PROJECT_VERSION}")
 

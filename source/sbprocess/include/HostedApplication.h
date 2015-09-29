@@ -19,6 +19,7 @@
 #define HOSTEDAPPLICATION_H
 
 #include <QApplication>
+#include "BridgeClient.h"
 #include "PluginsManager.h"
 
 class HostedApplication : public QApplication
@@ -34,12 +35,21 @@ public:
 private slots:
 
     void loadPlugin();
+    void initBridge();
+    void handleRequest(const QVariant &data);
+
+
+    // Request to host bridge
+    void sendWinId();
 
 private:
 
     bool parseArguments();
 
     sb::PluginsManager *m_pPluginsManager;
+    sb::BridgeClient *m_pBridgeClient;
+    sb::PluginInstance *m_pPluginInstance;
+    QWidget *m_pTopWidget;
     QString m_pipeName;
     QString m_pluginName;
 };
